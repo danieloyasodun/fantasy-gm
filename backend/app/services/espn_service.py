@@ -100,3 +100,34 @@ def fetch_free_agents(league_id: int, size: int = 20, position: str = None, year
         free_agents_data.append(player_info)
 
     return free_agents_data
+
+def fetch_draft(league_id: int, year: int = 2025):
+    """
+    Returns draft picks for the league.
+    """
+    league = get_league(league_id, year)
+
+    draft_data = []
+    for pick in league.draft:
+        draft_data.append({
+            "player_name": pick.playerName,
+            "round": pick.round_num,
+            "round_pick": pick.round_pick,
+            "team_name": pick.team.team_name,
+            "team_id": pick.team.team_id
+        })
+    
+    return draft_data
+
+def fetch_league_settings(league_id: int, year: int = 2025):
+    """
+    Returns league settings like number of teams, season length, and veto votes.
+    """
+    league = get_league(league_id, year)
+    settings = league.settings
+
+    return {
+        "team_count": settings.team_count,
+        "regular_season_count": settings.reg_season_count,
+        "veto_votes_required": settings.veto_votes_required
+    }
