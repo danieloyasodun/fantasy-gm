@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
 from ff_espn_api import League 
-from app.helper import get_league
 from app.services.espn_service import (
     fetch_league_teams_detailed, 
     fetch_draft, 
