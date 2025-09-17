@@ -17,13 +17,7 @@ def fetch_league_teams_detailed(league_id: int, year: int = 2025):
     """
     Fetches teams with basic info and roster
     """
-    league = League(
-        league_id=league_id,
-        year=year,
-        espn_s2=ESPNS2,
-        swid=SWID,
-        debug=False
-    )
+    league = get_league(league_id, year)
 
     teams_data = []
     for team in league.teams:
@@ -43,13 +37,7 @@ def fetch_players_by_team(league_id: int, team_id: int, year: int = 2025):
     """
     Returns detailed player info for a specific team in a league.
     """
-    league = League(
-        league_id=league_id,
-        year=year,
-        espn_s2=ESPNS2,
-        swid=SWID,
-        debug=False
-    )
+    league = get_league(league_id, year)
 
     # Find the team by ID
     team = next((t for t in league.teams if t.team_id == team_id), None)
@@ -131,3 +119,20 @@ def fetch_league_settings(league_id: int, year: int = 2025):
         "regular_season_count": settings.reg_season_count,
         "veto_votes_required": settings.veto_votes_required
     }
+
+def fetch_power_rankings(league_id: int, week: int, year: int = 2025):
+    """
+    Returns power rankings for a league for a given week.
+    """
+    league = get_league(league_id, year)
+    rankings = league.power_rankings(week=week)
+
+    rankings_data = []
+    for score, team in rankings:
+        rankings_data.append({
+            "team_name": team.team_name,
+            "team_id": team.team_id,
+            "score": float(score)
+        })
+    
+    return rankings_data

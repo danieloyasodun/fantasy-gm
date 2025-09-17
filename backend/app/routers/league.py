@@ -1,5 +1,10 @@
-from fastapi import APIRouter, HTTPException
-from app.services.espn_service import fetch_league_teams_detailed, fetch_draft, fetch_league_settings
+from fastapi import APIRouter, HTTPException, Query
+from app.services.espn_service import (
+    fetch_league_teams_detailed, 
+    fetch_draft, 
+    fetch_league_settings, 
+    fetch_power_rankings
+)
 
 router = APIRouter()
 
@@ -32,4 +37,14 @@ def get_settings(league_id: int):
     data = fetch_league_settings(league_id)
     if not data:
         raise HTTPException(status_code=404, detail="League settings not found")
+    return data
+
+@router.get("/league/{league_id}/power-rankings")
+def get_power_rankings(league_id: int, week: int = Query(..., description="Week number")):
+    """
+    Returns power rankings for a given league and week
+    """
+    data = fetch_power_rankings(league_id, week)
+    if not data:
+        raise HTTPException(status_code=404, detail="Power rankings not found")
     return data
