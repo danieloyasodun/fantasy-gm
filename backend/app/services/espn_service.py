@@ -1,6 +1,18 @@
 from espn_api.football import League
 from app.config import ESPNS2, SWID
 
+def get_league(league_id: int, year: int = 2025, debug: bool = False) -> League:
+    """
+    Initializes and returns an ESPN League object.
+    """
+    return League(
+        league_id=league_id,
+        year=year,
+        espn_s2=ESPNS2,
+        swid=SWID,
+        debug=debug
+    )
+
 def fetch_league_teams_detailed(league_id: int, year: int = 2025):
     """
     Fetches teams with basic info and roster
@@ -60,3 +72,31 @@ def fetch_players_by_team(league_id: int, team_id: int, year: int = 2025):
         players_data.append(player_info)
 
     return players_data
+
+def fetch_free_agents(league_id: int, size: int = 20, position: str = None, year: int = 2025):
+    """
+    Returns free agents for a league optionally filtered by position and limited by size
+    """
+    league = get_league(league_id, year)
+
+    # Fetch free agents
+    if position:
+        agents = league.free_agents(size=size, position=position)
+    else:
+        agents = league.free_agents(size=size)
+
+    # Convert to JSON-serializable dicts
+    free_agents_data = []
+    for player in agents:
+        player_info = {
+            "player_id": player.playerId,
+            "name": player.name,
+            "position": player.position,
+            "pos_rank": player.posRank,
+            "pro_team": player.proTeam,
+            "eligible_slots": player.eligibleSlots,
+            "acquisition_type": player.acquisitionType
+        }
+        free_agents_data.append(player_info)
+
+    return free_agents_data
