@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from ff_espn_api import League 
+from app.helper import get_league
 from app.services.espn_service import (
     fetch_league_teams_detailed, 
     fetch_draft, 
@@ -15,8 +16,15 @@ from app.services.espn_service import (
 
 router = APIRouter()
 
+def fetch_team_by_id(league_id: int, team_id: int):
+    teams = fetch_league_teams_detailed(league_id)
+    for team in teams:
+        if team['team_id'] == team_id: 
+            return team
+    return None 
+
 @router.get("/league/{league_id}")
-def get_league(league_id: int):
+def get_league_info(league_id: int):
     """
     Fetches all teams in the league with basic info and roster
     """
@@ -24,6 +32,65 @@ def get_league(league_id: int):
     if not data:
         raise HTTPException(status_code=404, detail="League data not found")
     return data
+
+@router.get("/league/{league_id}/team/{team_id}")
+def get_team(league_id: int, team_id: int):
+    """
+    Fetches specific team in the league with basic info and roster
+    """
+    team = fetch_team_by_id(league_id, team_id)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    return team 
+
+@router.get("/league/{league_id}/team/{team_id}/detailed")
+def get_team_detailed(league_id: int, team_id: int, year: int = 2025):
+    """
+    Fetches a specific team in a league with full stats, projections, and breakdowns.
+    """
+    league = get_league(league_id, year)
+
+    # Find the team by ID
+    team = next((t for t in league.teams if t.team_id == team_id), None)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    detailed_team = {
+        "team_id": team.team_id,
+        "team_abbrev": getattr(team, "team_abbrev", None),
+        "team_name": team.team_name,
+        "division_id": getattr(team, "division_id", None),
+        "division_name": getattr(team, "division_name", None),
+        "wins": team.wins,
+        "losses": team.losses,
+        "ties": getattr(team, "ties", 0),
+        "points_for": getattr(team, "points_for", 0.0),
+        "points_against": getattr(team, "points_against", 0.0),
+        "acquisitions": getattr(team, "acquisitions", 0),
+        "acquisition_budget_spent": getattr(team, "acquisition_budget_spent", 0),
+        "drops": getattr(team, "drops", 0),
+        "trades": getattr(team, "trades", 0),
+        "move_to_ir": getattr(team, "move_to_ir", 0),
+        "playoff_pct": getattr(team, "playoff_pct", 0.0),
+        "draft_projected_rank": getattr(team, "draft_projected_rank", None),
+        "streak_length": getattr(team, "streak_length", 0),
+        "streak_type": getattr(team, "streak_type", None),
+        "standing": getattr(team, "standing", None),
+        "final_standing": getattr(team, "final_standing", None),
+        "waiver_rank": getattr(team, "waiver_rank", None),
+        "logo_url": getattr(team, "logo_url", None),
+        # Convert schedule to dicts with only basic info
+        "schedule": [{"team_id": t.team_id, "team_name": t.team_name} for t in getattr(team, "schedule", [])],
+        # Convert roster to dicts with only basic info
+        "roster": [{"name": p.name, "playerId": p.playerId, "position": p.position} for p in getattr(team, "roster", [])],
+        "scores": getattr(team, "scores", []),
+        "outcomes": getattr(team, "outcomes", []),
+        "mov": getattr(team, "mov", []),
+        "stats": getattr(team, "stats", {}),
+    }
+
+
+    return detailed_team
 
 @router.get("/league/{league_id}/draft")
 def get_draft(league_id: int):
