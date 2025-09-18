@@ -14,16 +14,16 @@ export default async function Home() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Welcome to Fantasy AI Assistant GM</h1>
-      <p className={styles.subtitle}>
-        Manage your team, analyze stats, and dominate your fantasy league with AI-powered insights.
-      </p>
-
       {settings && (
         <div>
           <h2>{settings.league_name}</h2>
         </div>
       )}
+      
+      <h1 className={styles.title}>Welcome to Fantasy AI Assistant GM</h1>
+      <p className={styles.subtitle}>
+        Manage your team, analyze stats, and dominate your fantasy league with AI-powered insights.
+      </p>
 
       <div className={styles.grid}>
         <Link href="/teams" className={styles.card}>Manage My Team</Link>
