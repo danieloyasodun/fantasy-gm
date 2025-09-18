@@ -103,7 +103,10 @@ def fetch_league_settings(league_id: int, year: int = 2025):
     league = get_league(league_id, year)
     settings = league.settings
 
+    """print(vars(settings))"""
+
     return {
+        "league_name": settings.name,
         "team_count": settings.team_count,
         "regular_season_count": settings.reg_season_count,
         "veto_votes_required": settings.veto_votes_required

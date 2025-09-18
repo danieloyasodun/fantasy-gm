@@ -24,14 +24,15 @@ def fetch_team_by_id(league_id: int, team_id: int):
     return None 
 
 @router.get("/league/{league_id}")
-def get_league_info(league_id: int):
-    """
-    Fetches all teams in the league with basic info and roster
-    """
-    data = fetch_league_teams_detailed(league_id)
-    if not data:
-        raise HTTPException(status_code=404, detail="League data not found")
-    return data
+async def get_league_info(league_id: int):
+    try:
+        data = fetch_league_teams_detailed(league_id)
+        if not data:
+            raise HTTPException(status_code=404, detail="League data not found")
+        return data
+    except Exception as e:
+        print("ERROR in /league endpoint:", e)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/league/{league_id}/team/{team_id}")
 def get_team(league_id: int, team_id: int):
@@ -104,14 +105,19 @@ def get_draft(league_id: int):
 
 
 @router.get("/league/{league_id}/settings")
-def get_settings(league_id: int):
+async  def get_settings(league_id: int):
     """
     Returns league settings such as team count, season length, and veto votes.
     """
-    data = fetch_league_settings(league_id)
-    if not data:
-        raise HTTPException(status_code=404, detail="League settings not found")
-    return data
+    try:
+        data =  fetch_league_settings(league_id)
+        if not data:
+            raise HTTPException(status_code=404, detail="League settings not found")
+        return data
+    except Exception as e:
+        print("Error is /settings endpoint:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/league/{league_id}/power-rankings")
 def get_power_rankings(league_id: int, week: int = Query(..., description="Week number")):
