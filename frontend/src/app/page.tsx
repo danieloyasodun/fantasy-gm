@@ -42,7 +42,7 @@ return (
         </p>
 
         <div className={styles.grid}>
-          <Link href="/teams" className={styles.card}>Manage My Team</Link>
+          <Link href="/teams" className={styles.card}>View My Team</Link>
           <Link href="/league" className={styles.card}>View League Stats</Link>
           <Link href="/draft" className={styles.card}>Draft Room</Link>
           <Link href="/settings" className={styles.card}>Settings</Link>
