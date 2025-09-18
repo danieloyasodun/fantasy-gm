@@ -5,8 +5,8 @@ from app.routers import league, players, free_agents
 app = FastAPI(title="Fantasy GM Backend")
 
 origins = [
-    "http://localhost:5173",   # React dev server
-    "http://127.0.0.1:5173",
+    "http://localhost:3000",   # React dev server
+    "http://127.0.0.1:3000",
 ]
 
 app.add_middleware(

@@ -1,0 +1,34 @@
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #1a365d;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #555;
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-weight: 600;
+  color: #1a365d;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.card:hover {
+  background: #ebf8ff;
+  transform: translateY(-4px);
+}
