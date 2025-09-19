@@ -52,7 +52,8 @@ def fetch_players_by_team(league_id: int, team_id: int, year: int = 2025):
 
 def fetch_free_agents(league_id: int, size: int = 20, position: str = None, year: int = 2025):
     """
-    Returns free agents for a league optionally filtered by position and limited by size
+    Returns free agents for a league optionally filtered by position and limited by size.
+    Includes projected points, stats, and additional player metadata.
     """
     league = get_league(league_id, year)
 
@@ -62,9 +63,15 @@ def fetch_free_agents(league_id: int, size: int = 20, position: str = None, year
     else:
         agents = league.free_agents(size=size)
 
-    # Convert to JSON-serializable dicts
     free_agents_data = []
     for player in agents:
+        # Extract stats safely
+        stats = getattr(player, "stats", {}) or {}
+
+        # Most recent / season-level stats (espn-python uses 0 for season totals, 3 for current week projections)
+        season_stats = stats.get(0, {})
+        week_projection = stats.get(3, {})
+
         player_info = {
             "player_id": player.playerId,
             "name": player.name,
@@ -72,11 +79,36 @@ def fetch_free_agents(league_id: int, size: int = 20, position: str = None, year
             "pos_rank": player.posRank,
             "pro_team": player.proTeam,
             "eligible_slots": player.eligibleSlots,
-            "acquisition_type": player.acquisitionType
+            "acquisition_type": player.acquisitionType,
+            "injury_status": getattr(player, "injuryStatus", None),
+            "active_status": getattr(player, "active_status", None),
+            "percent_owned": getattr(player, "percent_owned", None),
+            "percent_started": getattr(player, "percent_started", None),
+            "total_points": season_stats.get("points", 0),
+            "avg_points": season_stats.get("avg_points", 0),
+            "projected_total_points": season_stats.get("projected_points", 0),
+            "projected_avg_points": season_stats.get("projected_avg_points", 0),
+            "stats": {
+                "season": {
+                    "points": season_stats.get("points", 0),
+                    "breakdown": season_stats.get("breakdown", {}),
+                    "projected_points": season_stats.get("projected_points", 0),
+                    "projected_breakdown": season_stats.get("projected_breakdown", {}),
+                },
+                "week_projection": {
+                    "projected_points": week_projection.get("projected_points", 0),
+                    "projected_breakdown": week_projection.get("projected_breakdown", {}),
+                },
+            },
+            "opponent": getattr(player, "pro_opponent", None),
+            "game_date": getattr(player, "game_date", None),
+            "on_bye_week": getattr(player, "on_bye_week", False),
         }
+
         free_agents_data.append(player_info)
 
     return free_agents_data
+
 
 def fetch_draft(league_id: int, year: int = 2025):
     """
@@ -98,19 +130,37 @@ def fetch_draft(league_id: int, year: int = 2025):
 
 def fetch_league_settings(league_id: int, year: int = 2025):
     """
-    Returns league settings like number of teams, season length, and veto votes.
+    Returns league settings like number of teams, season length, veto votes,
+    scoring categories (ids, names, points), and position slot counts.
     """
     league = get_league(league_id, year)
     settings = league.settings
 
-    """print(vars(settings))"""
+    # Build a cleaner scoring categories list
+    scoring_categories = [
+        {
+            "id": cat["id"],
+            "abbr": cat["abbr"],
+            "label": cat["label"],
+            "points": cat["points"],
+        }
+        for cat in getattr(settings, "scoring_format", [])
+    ]
 
     return {
         "league_name": settings.name,
         "team_count": settings.team_count,
         "regular_season_count": settings.reg_season_count,
-        "veto_votes_required": settings.veto_votes_required
+        "veto_votes_required": settings.veto_votes_required,
+        "playoff_team_count": settings.playoff_team_count,
+        "keeper_count": settings.keeper_count,
+        "scoring_type": settings.scoring_type,
+        "faab_enabled": settings.faab,
+        "acquisition_budget": settings.acquisition_budget,
+        "position_slot_counts": getattr(settings, "position_slot_counts", {}),
+        "scoring_categories": scoring_categories,
     }
+
 
 def fetch_power_rankings(league_id: int, week: int, year: int = 2025):
     """
